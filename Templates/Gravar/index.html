@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gravar Áudio</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">Gravar Áudio</h1>
+    <div class="mb-4">
+        <button id="recordButton" class="btn btn-primary">Gravar Áudio</button>
+        <button id="stopButton" class="btn btn-secondary" disabled>Parar Gravação</button>
+    </div>
+    <div class="mb-4">
+        <audio id="audioPlayback" controls></audio>
+    </div>
+    <form id="uploadForm" method="post" enctype="multipart/form-data" action="api/upload_audio">
+        <input type="file" name="file" id="audioFile" style="display: none;">
+        <button type="submit" class="btn btn-success" disabled>Enviar Áudio</button>
+    </form>
+</div>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const recordButton = document.getElementById('recordButton');
+    const stopButton = document.getElementById('stopButton');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const uploadForm = document.getElementById('uploadForm');
+    const audioFileInput = document.getElementById('audioFile');
+    const submitButton = uploadForm.querySelector('button[type="submit"]');
+
+    recordButton.addEventListener('click', startRecording);
+    stopButton.addEventListener('click', stopRecording);
+
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                mediaRecorder.addEventListener('dataavailable', event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener('stop', () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPlayback.src = audioUrl;
+
+                    // Prepare the audio file for upload
+                    const file = new File([audioBlob], 'recording.ogg', { type: 'audio/ogg; codecs=opus' });
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    audioFileInput.files = dataTransfer.files;
+                    submitButton.disabled = false;
+                });
+
+                recordButton.disabled = true;
+                stopButton.disabled = false;
+            });
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        recordButton.disabled = false;
+        stopButton.disabled = true;
+    }
+</script>
+</body>
+</html>

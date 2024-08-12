@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CeumaTranscritor</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body, html {
+            width:100vw;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, #0062E6, #33AEFF);
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 2s;
+        }
+        .btn-custom {
+            margin: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 30px;
+            transition: transform 0.3s;
+        }
+        .btn-custom:hover {
+            transform: scale(1.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .logo{
+            width:50%;
+            height: 50%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img src="{{ url_for('static', filename='Logo.png') }}" alt="Logo" class="logo">
+    <h1 class="title">CeumaTranscritor</h1>
+    <a href="/audio" class="btn btn-primary btn-custom">Gravar Áudio</a>
+    <a href="/painel" class="btn btn-success btn-custom">Entrar no Painel</a>
+</div>
+</body>
+</html>

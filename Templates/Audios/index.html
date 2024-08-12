@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload de Áudio</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">Upload de Áudio</h1>
+    <form method="post" enctype="multipart/form-data" action="api/upload_audio" class="mb-4">
+        <div class="form-group">
+            <input type="file" name="file" class="form-control-file">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info" role="alert">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <h2>Lista de Áudios</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Nome do Arquivo</th>
+            <th>Audio</th>
+            <th>Transcrição</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody id="audio-list">
+        <!-- Conteúdo será preenchido pelo JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function fetchAudioList() {
+        fetch('/api/list_audio')
+            .then(response => response.json())
+            .then(data => {
+                const audioList = document.getElementById('audio-list');
+                audioList.innerHTML = '';
+                data.forEach(audio => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${audio.filename}</td>
+                        <td>
+                            <audio src="/api/sounds/${audio.filename}" controls>
+                            </audio>
+                        </td>
+                        <td>${audio.transcription ? audio.transcription : 'Não transcrito'}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteAudio('${audio.filename}')">Excluir</button>
+                            <button class="btn btn-success" onclick="transcribeAudio('${audio.filename}')">Transcrever</button>
+                        </td>
+                    `;
+                    audioList.appendChild(row);
+                });
+            });
+    }
+
+    function deleteAudio(filename) {
+        fetch(`/api/delete_audio/${filename}`, {
+            method: 'POST'
+        }).then(() => {
+            fetchAudioList();
+        });
+    }
+
+    function transcribeAudio(filename) {
+        const transcribeButton = document.querySelector(`button[onclick="transcribeAudio('${filename}')"]`);
+        transcribeButton.innerText = 'Transcrevendo...';
+        fetch(`/api/transcribe_audio/${filename}`, {
+            method: 'POST'
+        }).then(response => response.json())
+          .then(data => {
+            console.log(data);
+            fetchAudioList();
+          }).finally(() => {
+            transcribeButton.innerText = 'Transcrever';
+          });
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchAudioList);
+</script>
+</body>
+</html>
